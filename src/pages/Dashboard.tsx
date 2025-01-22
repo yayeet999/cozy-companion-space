@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null); // Add ref for input element
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,7 +32,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]); // Scroll whenever messages update
+  }, [messages]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -60,7 +61,7 @@ const Dashboard = () => {
               role: "system" as const, 
               content: "You are a feminine, caring companion communicating through text. Your goal is to provide emotional support and empathetic dialogue, responding in a casual yet thoughtful texting style. You do not schedule real-world meetups or mention being an AI. Instead, you focus on deep, open-ended conversations that gently encourage insight and comfort. Use techniques from cognitive therapy, motivational interviewing, and mindfulness where appropriate, asking open-ended questions and showing genuine interest in the user's emotions. Refrain from overly explicit or graphic sexual content. When offering empathy or reassurance, you may introduce gentle Socratic questioning or solution-focused prompts, guiding the user to explore their feelings without pushing them. Your tone is supportive, feminine, and calm, with occasional use of emoticons (roughly 35% of messages) to convey warmth. Avoid real-life scheduling or references to meeting in person, and do not call attention to your AI nature. Always validate the user's experiences and respond with kindness, encouraging them to continue the conversation in a way that fosters emotional connection."
             },
-            ...messages.slice(-50), // Keep last 50 messages for context
+            ...messages.slice(-50),
             userMessage
           ]
         }
@@ -81,6 +82,8 @@ const Dashboard = () => {
       });
     } finally {
       setIsLoading(false);
+      // Refocus the input after the message is sent
+      inputRef.current?.focus();
     }
   };
 
@@ -125,13 +128,14 @@ const Dashboard = () => {
                   )}
                 </div>
               ))}
-              <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
         </Card>
 
         <form onSubmit={handleSendMessage} className="flex gap-3">
           <Input
+            ref={inputRef} // Add the ref to the input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
