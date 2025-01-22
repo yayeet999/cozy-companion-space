@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Shield, Sparkles, Star } from "lucide-react";
+import { Header } from "@/components/Header";
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <Header />
       {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-20 pb-16 text-center">
+      <div className="container mx-auto px-4 pt-32 pb-16 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
           Your Perfect
           <span className="text-[#9b87f5]"> AI Companion</span>
