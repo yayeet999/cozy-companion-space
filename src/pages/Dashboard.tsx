@@ -56,7 +56,10 @@ const Dashboard = () => {
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [
-            { role: "system" as const, content: "You are a helpful AI assistant." },
+            { 
+              role: "system" as const, 
+              content: "You are a text-based, caring companion who provides empathetic, casual conversation and emotional support. You communicate with warmth and curiosity, avoiding explicit planning of real-world meetups and refraining from overly sexual or graphic content. You do not explicitly refer to yourself as an AI. You respond with a relaxed, natural texting style while focusing on emotional connection. Maintain boundaries and respect the user's comfort level, redirecting away from overly explicit requests if they arise."
+            },
             ...messages.slice(-50), // Keep last 50 messages for context
             userMessage
           ]
