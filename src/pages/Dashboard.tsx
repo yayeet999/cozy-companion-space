@@ -48,7 +48,7 @@ const Dashboard = () => {
         body: {
           messages: [
             { role: "system" as const, content: "You are a helpful AI assistant." },
-            ...messages.slice(-5), // Keep context window manageable
+            ...messages.slice(-50), // Keep last 50 messages for context
             userMessage
           ]
         }
