@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Google } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Auth = () => {
@@ -152,7 +152,7 @@ const Auth = () => {
           className="w-full"
           onClick={handleGoogleSignIn}
         >
-          <Google className="mr-2 h-4 w-4" />
+          <LogIn className="mr-2 h-4 w-4" />
           Google
         </Button>
 
