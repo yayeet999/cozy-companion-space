@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LogIn } from "lucide-react";
+import { LogIn, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Auth = () => {
@@ -82,7 +82,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col items-center justify-center p-4">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4 flex items-center gap-2"
+        onClick={() => navigate("/")}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Home
+      </Button>
+      
       <Card className="w-full max-w-md p-6">
         <h1 className="text-2xl font-bold text-center mb-2">
           {isSignUp ? "Create an Account" : "Welcome Back"}
@@ -169,6 +178,6 @@ const Auth = () => {
       </Card>
     </div>
   );
-}
+};
 
 export default Auth;
