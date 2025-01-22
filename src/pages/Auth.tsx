@@ -21,7 +21,7 @@ const Auth = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate("/dashboard");
       }
     };
     checkSession();
@@ -53,7 +53,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       toast({
@@ -70,6 +70,9 @@ const Auth = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
       });
       if (error) throw error;
     } catch (error: any) {
