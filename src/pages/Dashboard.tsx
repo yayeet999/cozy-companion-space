@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,15 @@ const Dashboard = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // Scroll whenever messages update
 
   useEffect(() => {
     const checkSession = async () => {
@@ -113,6 +122,7 @@ const Dashboard = () => {
                   )}
                 </div>
               ))}
+              <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
             </div>
           </ScrollArea>
         </Card>
