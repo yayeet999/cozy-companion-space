@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Send } from "lucide-react";
+import { Send, Bot, User } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -43,42 +43,63 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white p-4">
-      <div className="max-w-4xl mx-auto h-screen flex flex-col">
-        <Card className="flex-grow mb-4 border shadow-sm">
-          <ScrollArea className="h-[calc(100vh-180px)] p-4">
-            <div className="space-y-4">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-white">
+      <div className="max-w-4xl mx-auto h-screen p-4 md:p-6 flex flex-col">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Chat Dashboard</h1>
+          <p className="text-sm text-gray-600">Ask me anything and I'll try to help!</p>
+        </div>
+        
+        <Card className="flex-grow mb-4 border shadow-lg bg-white/50 backdrop-blur-sm">
+          <ScrollArea className="h-[calc(100vh-280px)] p-4 md:p-6">
+            <div className="space-y-6">
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex ${
+                  className={`flex items-start gap-3 ${
                     message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
+                  {message.role === "assistant" && (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-indigo-600" />
+                    </div>
+                  )}
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[80%] rounded-2xl p-4 ${
                       message.role === "user"
-                        ? "bg-[#9b87f5] text-white"
-                        : "bg-gray-100 text-gray-900"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {message.content}
+                    <p className="text-sm md:text-base leading-relaxed">
+                      {message.content}
+                    </p>
                   </div>
+                  {message.role === "user" && (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </ScrollArea>
         </Card>
 
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+        <form onSubmit={handleSendMessage} className="flex gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-grow"
+            className="flex-grow shadow-sm border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
-          <Button type="submit" className="bg-[#9b87f5] hover:bg-[#7E69AB]">
-            <Send className="h-4 w-4" />
+          <Button 
+            type="submit" 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm px-6"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Send
           </Button>
         </form>
       </div>
