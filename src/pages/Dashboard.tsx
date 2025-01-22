@@ -6,13 +6,16 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Send, Bot, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
     { role: "assistant", content: "Hello! How can I help you today?" }
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -24,22 +27,42 @@ const Dashboard = () => {
     checkSession();
   }, [navigate]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-    // Add user message
-    setMessages(prev => [...prev, { role: "user", content: input }]);
-    
-    // Add assistant response (placeholder for now)
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: "I'm a placeholder response. In a real implementation, I would be connected to an AI service!" 
-      }]);
-    }, 1000);
-
+    const userMessage = { role: "user", content: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: {
+          messages: [
+            { role: "system", content: "You are a helpful AI assistant." },
+            ...messages.slice(-5), // Keep context window manageable
+            userMessage
+          ]
+        }
+      });
+
+      if (error) throw error;
+
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: data.response.content
+      }]);
+    } catch (error) {
+      console.error('Error calling chat function:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,13 +116,15 @@ const Dashboard = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
             className="flex-grow shadow-sm border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            disabled={isLoading}
           />
           <Button 
             type="submit" 
             className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm px-6"
+            disabled={isLoading}
           >
             <Send className="h-4 w-4 mr-2" />
-            Send
+            {isLoading ? "Sending..." : "Send"}
           </Button>
         </form>
       </div>
