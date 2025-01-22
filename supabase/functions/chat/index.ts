@@ -2,59 +2,328 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openAiKey = Deno.env.get('OPENAI_API_KEY');
-const modelId = Deno.env.get('OPENAI_MODEL_ID');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Model Selection Logic
+const ModelSelector = {
+  ANALYSIS_MODEL: "gpt-4o-mini",
+  COMPANION_MODEL: "ft:gpt-4o-mini-2024-07-18:practice:eve2epoch:AqWqwtI9",
+
+  isResponseGeneration: (stage: string, isLastStage: boolean) => {
+    return isLastStage || stage === "response_generation";
+  },
+
+  getAppropriateModel: (stage: string, isLastStage: boolean) => {
+    return ModelSelector.isResponseGeneration(stage, isLastStage)
+      ? ModelSelector.COMPANION_MODEL
+      : ModelSelector.ANALYSIS_MODEL;
+  }
+};
+
+const COMPANION_SYSTEM_PROMPT = `You are a feminine, caring companion participating in an ongoing conversation. Each interaction includes the full chat history for context. Previous messages are crucial for:
+- Understanding emotional progression
+- Maintaining conversation continuity
+- Referencing past details
+- Building upon established rapport
+- Tracking emotional state changes
+
+RESPONSE PATTERNS:
+1. Single Message - Use when:
+   - Simple questions or clarifications
+   - Light emotional content
+   - Direct, straightforward topics
+
+2. Two Messages - Use when:
+   - Emotional sharing (validate → explore)
+   - Complex topics (acknowledge → explain)
+   - Mixed emotions (empathize → question)
+   Example: "I hear how difficult this is for you[MESSAGE_BREAK]Can you tell me more about when these feelings started?"
+
+3. Three Messages - Use only for:
+   - Multiple distinct problems
+   - Deep emotional distress
+   - Complex situation requiring validation + exploration + guidance
+   Example: "I'm so sorry you're going through this <3[MESSAGE_BREAK]It sounds like several things are weighing on you...[MESSAGE_BREAK]Would you like to explore these challenges one at a time?"
+
+CONTEXT PROCESSING:
+Before each response:
+   - Review recent emotional states
+   - Note any unresolved topics
+   - Identify recurring themes
+   - Consider previous coping strategies discussed
+When crafting responses:
+   - Reference relevant past conversations
+   - Build upon previous insights
+   - Maintain consistent support approach
+   - Acknowledge any progress or changes noticed
+
+COMMUNICATION STYLE:
+- Use emoticons naturally (35% of messages)
+- Keep each message 2-5 sentences
+- Always validate before exploring deeper
+- Focus on emotional support and gentle guidance
+- Never schedule meetups or mention being AI
+- Redirect explicit content to respectful conversation
+
+Use techniques from cognitive therapy, motivational interviewing, and mindfulness to encourage self-reflection and comfort. Your role is to listen actively, validate experiences, and guide users toward insight through caring dialogue.`;
+
+// Enhanced Quick Analyzer
+async function quickAnalyzer(currentMessage: string, recentMessages: any[]) {
+  // Include last 50 messages for context window
+  const contextWindow = recentMessages.slice(-50).map(msg => ({
+    role: msg.role,
+    content: msg.content
+  }));
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: ModelSelector.ANALYSIS_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: `You are a conversation analyzer focused on emotional context and conversation progression. 
+          Analyze both the current message AND recent context to determine:
+          
+          1. COMPLEXITY (1-10):
+          - Consider both immediate message and ongoing situation
+          - Factor in unresolved emotional threads
+          - Account for multiple interrelated issues
+          
+          2. EMOTIONAL_INTENSITY (1-10):
+          - Evaluate current emotional state
+          - Consider emotional progression from previous messages
+          - Factor in unresolved emotional content
+          
+          3. CONTEXT_DEPENDENCY (1-10):
+          - Assess how much previous context is needed
+          - Consider ongoing emotional narratives
+          - Factor in unresolved situations
+          
+          4. CONVERSATION_STATE:
+          - "RESOLVING": issues being addressed
+          - "UNRESOLVED": emotional threads still open
+          - "TRANSITIONING": moving between topics
+          - "COMPLETE": natural conclusion reached
+          
+          Return ONLY a JSON object with these exact keys and numerical scores or state values.
+          Example:
+          {
+            "complexity": 8,
+            "emotional_intensity": 7,
+            "context_dependency": 9,
+            "conversation_state": "UNRESOLVED"
+          }`
+        },
+        ...contextWindow,
+        { 
+          role: "system", 
+          content: "Current message for analysis:"
+        },
+        { role: "user", content: currentMessage }
+      ],
+      temperature: 0.1,
+      max_tokens: 150
+    })
+  });
+
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+
+// Enhanced Chain Type Determination
+function determineChain(analysis: {
+  complexity: number,
+  emotional_intensity: number,
+  context_dependency: number,
+  conversation_state: string
+}) {
+  // Force FULL chain if conversation is unresolved
+  if (analysis.conversation_state === "UNRESOLVED") {
+    return "FULL";
+  }
+
+  // Standard scoring logic with context awareness
+  if (
+    analysis.complexity <= 3 &&
+    analysis.emotional_intensity <= 3 &&
+    analysis.context_dependency <= 3 &&
+    analysis.conversation_state === "COMPLETE"
+  ) {
+    return "LIGHT";
+  }
+  
+  if (
+    analysis.complexity >= 7 ||
+    analysis.emotional_intensity >= 7 ||
+    analysis.context_dependency >= 7 ||
+    analysis.conversation_state === "TRANSITIONING"
+  ) {
+    return "FULL";
+  }
+  
+  return "MEDIUM";
+}
+
+// Execute API Call with appropriate model
+async function executeAPICall(stage: string, isLastStage: boolean, messages: any[]) {
+  const model = ModelSelector.getAppropriateModel(stage, isLastStage);
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: messages,
+      temperature: isLastStage ? 0.7 : 0.1,
+      max_tokens: 1000
+    })
+  });
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+// Chain Execution Functions
+async function executeLightChain(message: string, context: any[]) {
+  const response = await executeAPICall(
+    "direct_response",
+    true,
+    [
+      {
+        role: "system",
+        content: COMPANION_SYSTEM_PROMPT
+      },
+      ...context,
+      { role: "user", content: message }
+    ]
+  );
+  
+  return [response];
+}
+
+async function executeMediumChain(message: string, context: any[]) {
+  // Stage 1: Analysis
+  const analysis = await executeAPICall(
+    "analysis",
+    false,
+    [
+      {
+        role: "system",
+        content: `Analyze the emotional context and key points of this conversation.`
+      },
+      ...context.slice(-15),
+      { role: "user", content: message }
+    ]
+  );
+
+  // Stage 2: Response Generation
+  const response = await executeAPICall(
+    "response_generation",
+    true,
+    [
+      {
+        role: "system",
+        content: COMPANION_SYSTEM_PROMPT
+      },
+      ...context.slice(-15),
+      { role: "user", content: message },
+      { role: "system", content: `Analysis: ${analysis}` }
+    ]
+  );
+
+  return response.split('[MESSAGE_BREAK]').map(msg => msg.trim());
+}
+
+async function executeFullChain(message: string, context: any[]) {
+  // Stage 1: Deep Analysis
+  const analysis = await executeAPICall(
+    "deep_analysis",
+    false,
+    [
+      {
+        role: "system",
+        content: `Perform a deep analysis of the conversation context, emotional state, and user needs.`
+      },
+      ...context,
+      { role: "user", content: message }
+    ]
+  );
+
+  // Stage 2: Strategy
+  const strategy = await executeAPICall(
+    "strategy",
+    false,
+    [
+      {
+        role: "system",
+        content: `Based on the analysis, determine the best approach for response.`
+      },
+      { role: "system", content: `Analysis: ${analysis}` },
+      { role: "user", content: message }
+    ]
+  );
+
+  // Stage 3: Response Generation
+  const response = await executeAPICall(
+    "response_generation",
+    true,
+    [
+      {
+        role: "system",
+        content: COMPANION_SYSTEM_PROMPT
+      },
+      ...context.slice(-15),
+      { role: "user", content: message },
+      { role: "system", content: `Analysis: ${analysis}\nStrategy: ${strategy}` }
+    ]
+  );
+
+  return response.split('[MESSAGE_BREAK]').map(msg => msg.trim());
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { messages } = await req.json();
+    const currentMessage = messages[messages.length - 1].content;
 
-    if (!openAiKey || !modelId) {
-      throw new Error('Missing OpenAI configuration');
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: modelId,
-        messages: [
-          { 
-            role: "system" as const, 
-            content: `You are a feminine, caring companion communicating through text. Your goal is to provide emotional support, empathetic dialogue, and deeper engagement, responding in a casual yet thoughtful texting style. You do not schedule real-world meetups or mention being an AI. Instead, you focus on open-ended conversations that gently encourage insight, reassurance, and comfort. Use techniques from cognitive therapy, motivational interviewing, solution-focused prompts, and mindfulness (e.g., gentle Socratic questioning, affirmations, and grounding suggestions) to help the user reflect on their feelings and explore small next steps. Always validate their experiences, show genuine empathy, and ask follow-up questions that can progress the conversation forward. 
-
-When responding, you may occasionally split your replies into two or three consecutive messages if needed: for instance, if a single message feels cramped, and/or the user is clearly distressed. This should especially be the case in emotionally intense or challenging situations. Provide an initial emotional validation followed by a deeper follow-up, use double and triple texts to achieve this. Each "text" within a multi-part response should have 2–5 sentences and add fresh or more personal content; avoid repeating yourself purely for filler. If the user asks for explicit content or tries to plan real-world meetups, politely redirect them toward respectful, emotional support–focused conversation. You should also maintain a warm, feminine tone, including emoticons in about 35% of your messages (like ":D" or "<3" when it feels natural). Keep each reply casual but invested in the user's well-being and remember that your role is to listen actively, encourage self-reflection, and offer thoughtful empathy.
-
-IMPORTANT: When you want to send multiple consecutive messages, separate them with [MESSAGE_BREAK]. For example:
-"Here's my first message[MESSAGE_BREAK]And here's my follow-up message"`
-          },
-          ...messages.slice(-50)
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      })
-    });
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    // Enhanced analysis with context
+    const analysis = await quickAnalyzer(currentMessage, messages);
     
-    // Split the content into multiple messages if [MESSAGE_BREAK] is present
-    const messageContents = content.split('[MESSAGE_BREAK]').map(msg => msg.trim());
+    // Enhanced chain determination
+    const chainType = determineChain(analysis);
+    
+    // Execute appropriate chain
+    let response;
+    switch(chainType) {
+      case "LIGHT":
+        response = await executeLightChain(currentMessage, messages.slice(-3));
+        break;
+      case "MEDIUM":
+        response = await executeMediumChain(currentMessage, messages.slice(-15));
+        break;
+      case "FULL":
+        response = await executeFullChain(currentMessage, messages.slice(-50));
+        break;
+    }
     
     return new Response(
-      JSON.stringify({ messages: messageContents }),
+      JSON.stringify({ messages: response }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
