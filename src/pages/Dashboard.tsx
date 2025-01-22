@@ -8,10 +8,17 @@ import { Card } from "@/components/ui/card";
 import { Send, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+type MessageRole = "user" | "assistant" | "system";
+
+interface ChatMessage {
+  role: MessageRole;
+  content: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: "Hello! How can I help you today?" }
   ]);
   const [input, setInput] = useState("");
@@ -31,7 +38,7 @@ const Dashboard = () => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage: ChatMessage = { role: "user", content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -40,7 +47,7 @@ const Dashboard = () => {
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [
-            { role: "system", content: "You are a helpful AI assistant." },
+            { role: "system" as const, content: "You are a helpful AI assistant." },
             ...messages.slice(-5), // Keep context window manageable
             userMessage
           ]
@@ -50,7 +57,7 @@ const Dashboard = () => {
       if (error) throw error;
 
       setMessages(prev => [...prev, {
-        role: "assistant",
+        role: "assistant" as const,
         content: data.response.content
       }]);
     } catch (error) {
