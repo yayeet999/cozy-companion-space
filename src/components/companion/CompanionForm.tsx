@@ -39,10 +39,14 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
   };
 
+  const currentTraits = relationType === "friend" ? friendTraits : romanticTraits;
+  const requiredTraitCount = relationType === "friend" ? 4 : 5;
+  const hasAllTraits = Object.keys(traits).length >= requiredTraitCount;
+
   const handleNextStep = () => {
     if (currentStep === 0 && name && nickname && relationType) {
       onStepComplete(0);
-    } else if (currentStep === 1 && Object.keys(traits).length >= 4) {
+    } else if (currentStep === 1 && hasAllTraits) {
       onStepComplete(1);
     }
   };
@@ -111,10 +115,11 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
   }
 
   if (currentStep === 1) {
-    const currentTraits = relationType === "friend" ? friendTraits : romanticTraits;
-
     return (
       <div className="space-y-8">
+        <div className="text-sm text-muted-foreground">
+          Adjust the sliders below to define your companion's personality traits
+        </div>
         {currentTraits.map((trait) => (
           <div key={trait.key} className="space-y-4">
             <Label>
@@ -131,7 +136,7 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
         <Button
           className="w-full"
           onClick={handleNextStep}
-          disabled={Object.keys(traits).length < 4}
+          disabled={!hasAllTraits}
         >
           Continue
         </Button>
