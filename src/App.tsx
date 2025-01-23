@@ -6,49 +6,59 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ProtectedRoute } from "@/components/guards/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/guards/PublicOnlyRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <PublicOnlyRoute>
-                  <Index />
-                </PublicOnlyRoute>
-              }
-            />
-            <Route
-              path="/auth"
-              element={
-                <PublicOnlyRoute>
-                  <Auth />
-                </PublicOnlyRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <PublicOnlyRoute>
+                    <Index />
+                  </PublicOnlyRoute>
+                }
+              />
+              <Route
+                path="/auth"
+                element={
+                  <PublicOnlyRoute>
+                    <Auth />
+                  </PublicOnlyRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
