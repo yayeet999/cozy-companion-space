@@ -6,16 +6,22 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { Heart, Users, ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
+import { useToast } from "@/components/ui/use-toast";
 
 type RelationType = "friend" | "romantic" | null;
 
 const CompanionForm = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [relationType, setRelationType] = useState<RelationType>(null);
   const [traits, setTraits] = useState<Record<string, number>>({});
   const [showInterests, setShowInterests] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
 
   const friendTraits = [
     { name: "Empathy/supportiveness", key: "empathy" },
@@ -71,9 +77,63 @@ const CompanionForm = () => {
     ? "Maximum selections reached"
     : `Selected ${selectedInterests.size} interest${selectedInterests.size !== 1 ? 's' : ''} (${4 - selectedInterests.size} more available)`;
 
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Selected interests:", Array.from(selectedInterests));
+  const handleSave = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a companion",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!name || !relationType || !hasTraitsSelected || !hasValidInterests) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('companion_creators')
+        .insert({
+          user_id: user.id,
+          name,
+          nickname: nickname || null,
+          relation_type: relationType,
+          traits,
+          interests: Array.from(selectedInterests),
+          is_completed: true,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Companion created successfully!",
+      });
+
+      // Reset form
+      setName("");
+      setNickname("");
+      setRelationType(null);
+      setTraits({});
+      setSelectedInterests(new Set());
+      setShowInterests(false);
+    } catch (error) {
+      console.error('Error saving companion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create companion. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -219,8 +279,11 @@ const CompanionForm = () => {
             {/* Create Companion Button */}
             {hasValidInterests && (
               <div className="flex justify-end mt-6">
-                <Button onClick={handleSave}>
-                  Create Companion!
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Creating..." : "Create Companion!"}
                 </Button>
               </div>
             )}

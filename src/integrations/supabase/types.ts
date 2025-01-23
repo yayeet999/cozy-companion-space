@@ -13,21 +13,36 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          interests: string[]
           is_completed: boolean
+          name: string
+          nickname: string | null
+          relation_type: string
+          traits: Json
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          interests?: string[]
           is_completed?: boolean
+          name: string
+          nickname?: string | null
+          relation_type: string
+          traits?: Json
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          interests?: string[]
           is_completed?: boolean
+          name?: string
+          nickname?: string | null
+          relation_type?: string
+          traits?: Json
           updated_at?: string
           user_id?: string
         }
