@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Heart, Users } from "lucide-react";
+import { Heart, Users, ArrowRight } from "lucide-react";
 
 type RelationType = "friend" | "romantic" | null;
 
@@ -14,6 +14,7 @@ const CompanionForm = () => {
   const [nickname, setNickname] = useState("");
   const [relationType, setRelationType] = useState<RelationType>(null);
   const [traits, setTraits] = useState<Record<string, number>>({});
+  const [showInterests, setShowInterests] = useState(false);
 
   const friendTraits = [
     { name: "Empathy/supportiveness", key: "empathy" },
@@ -30,13 +31,28 @@ const CompanionForm = () => {
     { name: "Humor/Playfulness", key: "humor" },
   ];
 
+  const sharedInterests = [
+    "Reading", "Gaming", "Music", "Sports",
+    "Cooking", "Travel", "Art", "Movies"
+  ];
+
+  const companionInterests = [
+    "Photography", "Dancing", "Writing", "Hiking",
+    "Gardening", "Technology", "Fashion", "Fitness"
+  ];
+
   const handleTraitChange = (trait: string, value: number[]) => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
   };
 
+  const hasTraitsSelected = Object.keys(traits).length >= 3;
+
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
-      {/* Basic Info Section - More compact with grid layout */}
+    <div className={cn(
+      "space-y-4 mx-auto transition-all duration-300",
+      showInterests ? "max-w-4xl" : "max-w-2xl"
+    )}>
+      {/* Basic Info Section */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="name" className="text-sm">AI Name</Label>
@@ -60,7 +76,7 @@ const CompanionForm = () => {
         </div>
       </div>
 
-      {/* Relationship Type Selection - More compact cards */}
+      {/* Relationship Type Selection */}
       <div>
         <Label className="text-sm block mb-2">Relationship Type</Label>
         <div className="grid grid-cols-2 gap-3">
@@ -91,7 +107,7 @@ const CompanionForm = () => {
         </div>
       </div>
 
-      {/* Traits Section - Compact grid layout for sliders */}
+      {/* Traits Section */}
       {relationType && (
         <div className="space-y-3">
           <Label className="text-sm">Personality Traits</Label>
@@ -113,6 +129,66 @@ const CompanionForm = () => {
                 />
               </div>
             ))}
+          </div>
+
+          {/* Continue Button */}
+          {hasTraitsSelected && !showInterests && (
+            <div className="flex justify-center pt-4">
+              <Button
+                onClick={() => setShowInterests(true)}
+                className="group"
+              >
+                Continue
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Interests Section */}
+      {showInterests && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Shared Interests */}
+          <div className="space-y-3">
+            <Label className="text-sm block">Shared Interests/Hobbies</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {sharedInterests.map((interest, index) => (
+                <Card
+                  key={interest}
+                  className={cn(
+                    "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
+                    "animate-fade-in",
+                  )}
+                  style={{
+                    animationDelay: `${index * 50}ms`
+                  }}
+                >
+                  <div className="text-sm text-center">{interest}</div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Companion Interests */}
+          <div className="space-y-3">
+            <Label className="text-sm block">Companion Interests/Hobbies</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {companionInterests.map((interest, index) => (
+                <Card
+                  key={interest}
+                  className={cn(
+                    "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
+                    "animate-fade-in",
+                  )}
+                  style={{
+                    animationDelay: `${index * 50}ms`
+                  }}
+                >
+                  <div className="text-sm text-center">{interest}</div>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       )}
