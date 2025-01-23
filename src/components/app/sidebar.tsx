@@ -24,7 +24,7 @@ type SubscriptionTier = 'free' | 'paid';
 const menuItems = [
   { title: "Home", icon: Home, route: "/dashboard" },
   { title: "Let's Talk", icon: MessageSquare, route: "/dashboard/chat" },
-  { title: "Settings", icon: Settings, route: "/settings" },
+  { title: "Settings", icon: Settings, route: "/dashboard/settings" },
 ];
 
 export function AppSidebar() {
