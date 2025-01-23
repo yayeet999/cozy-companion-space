@@ -56,7 +56,7 @@ const CompanionForm = () => {
       const newSet = new Set(prev);
       if (newSet.has(interest)) {
         newSet.delete(interest);
-      } else if (newSet.size < 3) {
+      } else if (newSet.size < 4) {
         newSet.add(interest);
       }
       return newSet;
@@ -64,8 +64,12 @@ const CompanionForm = () => {
   };
 
   const hasTraitsSelected = Object.keys(traits).length >= 3;
-  const hasThreeInterests = selectedInterests.size === 3;
-  const remainingSelections = 3 - selectedInterests.size;
+  const hasValidInterests = selectedInterests.size >= 1;
+  const remainingSelections = selectedInterests.size === 0 
+    ? "Select at least 1 interest (maximum 4)"
+    : selectedInterests.size === 4 
+    ? "Maximum selections reached"
+    : `Selected ${selectedInterests.size} interest${selectedInterests.size !== 1 ? 's' : ''} (${4 - selectedInterests.size} more available)`;
 
   const handleSave = () => {
     // Handle save logic here
@@ -183,8 +187,7 @@ const CompanionForm = () => {
           <div className="space-y-6 animate-in slide-in-from-right duration-500">
             {/* Selection Notice */}
             <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg">
-              Select {remainingSelections} more interest{remainingSelections !== 1 ? 's' : ''} 
-              {remainingSelections > 0 ? ' (3 total required)' : ''}
+              {remainingSelections}
             </div>
 
             {/* AI Companion Interests */}
@@ -213,11 +216,11 @@ const CompanionForm = () => {
               </div>
             </div>
 
-            {/* Save Button */}
-            {hasThreeInterests && (
+            {/* Create Companion Button */}
+            {hasValidInterests && (
               <div className="flex justify-end mt-6">
                 <Button onClick={handleSave}>
-                  Save Interests
+                  Create Companion!
                 </Button>
               </div>
             )}
