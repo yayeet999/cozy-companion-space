@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,11 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
   const [relationType, setRelationType] = useState<RelationType>(null);
   const [traits, setTraits] = useState<Record<string, number>>({});
 
+  // Reset traits when relationship type changes
+  useEffect(() => {
+    setTraits({});
+  }, [relationType]);
+
   const friendTraits = [
     { name: "Empathy/supportiveness", key: "empathy" },
     { name: "Platonic Affection", key: "platonic_affection" },
@@ -39,9 +44,15 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
   };
 
+  const handleRelationTypeSelect = (type: RelationType) => {
+    setRelationType(type);
+  };
+
   const currentTraits = relationType === "friend" ? friendTraits : romanticTraits;
   const requiredTraitCount = relationType === "friend" ? 4 : 5;
-  const hasAllTraits = Object.keys(traits).length >= requiredTraitCount;
+  const hasAllTraits = 
+    Object.keys(traits).length === requiredTraitCount && 
+    Object.values(traits).every(value => value > 0);
 
   const handleNextStep = () => {
     if (currentStep === 0 && name && nickname && relationType) {
@@ -80,9 +91,9 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
             <Card
               className={cn(
                 "p-4 cursor-pointer hover:border-primary transition-colors",
-                relationType === "friend" && "border-primary"
+                relationType === "friend" && "border-primary bg-primary/5"
               )}
-              onClick={() => setRelationType("friend")}
+              onClick={() => handleRelationTypeSelect("friend")}
             >
               <div className="flex flex-col items-center space-y-2">
                 <Users className="h-8 w-8" />
@@ -92,9 +103,9 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
             <Card
               className={cn(
                 "p-4 cursor-pointer hover:border-primary transition-colors",
-                relationType === "romantic" && "border-primary"
+                relationType === "romantic" && "border-primary bg-primary/5"
               )}
-              onClick={() => setRelationType("romantic")}
+              onClick={() => handleRelationTypeSelect("romantic")}
             >
               <div className="flex flex-col items-center space-y-2">
                 <Heart className="h-8 w-8" />
@@ -114,22 +125,26 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
     );
   }
 
-  if (currentStep === 1) {
+  if (currentStep === 1 && relationType) {
     return (
       <div className="space-y-8">
         <div className="text-sm text-muted-foreground">
-          Adjust the sliders below to define your companion's personality traits
+          Adjust the sliders below to define your {relationType === "friend" ? "friend" : "partner"}'s personality traits
         </div>
         {currentTraits.map((trait) => (
           <div key={trait.key} className="space-y-4">
-            <Label>
-              {trait.name}: {traits[trait.key] || 0}
-            </Label>
+            <div className="flex justify-between items-center">
+              <Label>{trait.name}</Label>
+              <span className="text-sm font-medium">
+                {traits[trait.key] || 0}/10
+              </span>
+            </div>
             <Slider
-              defaultValue={[traits[trait.key] || 0]}
+              value={[traits[trait.key] || 0]}
               max={10}
               step={1}
               onValueChange={(value) => handleTraitChange(trait.key, value)}
+              className="cursor-pointer"
             />
           </div>
         ))}
