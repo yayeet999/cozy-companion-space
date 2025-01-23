@@ -40,7 +40,11 @@ const CompanionForm = () => {
     { title: "Travel", description: "Exploring new destinations" },
     { title: "Cooking squad", description: "Culinary and recipes" },
     { title: "Wanderlust buddy", description: "Adventure and Experiences" },
-    { title: "Tech geek", description: "Tech and gadgets fan" }
+    { title: "Tech geek", description: "Tech and gadgets fan" },
+    { title: "Trivia Master", description: "Fun trivia and quizzes" },
+    { title: "Sports Fan", description: "Discuss games and teams" },
+    { title: "Science Nerd", description: "Science topics and discoveries" },
+    { title: "History Buff", description: "Historical events and stories" }
   ];
 
   const handleTraitChange = (trait: string, value: number[]) => {
