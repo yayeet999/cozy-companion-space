@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +58,7 @@ const App = () => (
               >
                 <Route index element={<Home />} />
                 <Route path="chat" element={<Chat />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
             </Routes>
           </AuthProvider>
