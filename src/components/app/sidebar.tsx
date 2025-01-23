@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, Home, Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
 import {
   Sidebar,
   SidebarContent,
@@ -17,13 +18,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-
-// Menu items with their respective icons and routes
-const menuItems = [
-  { title: "Home", icon: Home, route: "/" },
-  { title: "Settings", icon: Settings, route: "/settings" },
-];
 
 type SubscriptionTier = 'free' | 'paid';
 
@@ -31,33 +25,33 @@ interface Subscription {
   tier: SubscriptionTier;
 }
 
+const menuItems = [
+  { title: "Home", icon: Home, route: "/dashboard" },
+  { title: "Settings", icon: Settings, route: "/settings" },
+];
+
 export function AppSidebar() {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { user, signOut } = useAuth();
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('free');
 
   useEffect(() => {
-    // Fetch user session and subscription data
-    const fetchUserData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserEmail(session.user.email);
-        
-        // Fetch subscription data
-        const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select('tier')
-          .eq('user_id', session.user.id)
-          .single();
-        
-        if (subscription) {
-          setSubscriptionTier(subscription.tier);
-        }
+    if (!user) return;
+
+    // Fetch subscription data
+    const fetchSubscription = async () => {
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('tier')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (subscription) {
+        setSubscriptionTier(subscription.tier);
       }
     };
 
-    fetchUserData();
+    fetchSubscription();
 
     // Listen for subscription changes
     const channel = supabase
@@ -67,7 +61,8 @@ export function AppSidebar() {
         {
           event: '*',
           schema: 'public',
-          table: 'subscriptions'
+          table: 'subscriptions',
+          filter: `user_id=eq.${user.id}`
         },
         (payload) => {
           if (payload.new) {
@@ -80,31 +75,14 @@ export function AppSidebar() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/auth');
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error signing out",
-        description: "There was a problem signing out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  }, [user]);
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        {userEmail && (
+        {user?.email && (
           <div className="text-sm font-medium text-sidebar-foreground">
-            {userEmail}
+            {user.email}
           </div>
         )}
       </SidebarHeader>
@@ -127,7 +105,7 @@ export function AppSidebar() {
               ))}
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={handleSignOut}
+                  onClick={signOut}
                   tooltip="Sign Out"
                   className="text-red-500 hover:text-red-600 hover:bg-red-50"
                 >
