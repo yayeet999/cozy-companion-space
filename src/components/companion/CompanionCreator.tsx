@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,14 +10,30 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CompanionForm from "./CompanionForm";
 
 const CompanionCreator = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const steps = [
+    "personality",
+    "interests",
+    "background",
+    "appearance",
+    "review",
+  ];
+
+  const handleStepComplete = (step: number) => {
+    setCurrentStep(step + 1);
+  };
+
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Create Your AI Companion</span>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="icon">
                 <Plus className="h-4 w-4" />
@@ -26,44 +43,35 @@ const CompanionCreator = () => {
               <DialogHeader>
                 <DialogTitle>Create Your Companion</DialogTitle>
               </DialogHeader>
-              <Tabs defaultValue="personality" className="w-full">
+              <Tabs value={steps[currentStep]} className="w-full">
                 <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="personality">Personality</TabsTrigger>
-                  <TabsTrigger value="interests">Interests</TabsTrigger>
-                  <TabsTrigger value="background">Background</TabsTrigger>
-                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
-                  <TabsTrigger value="review">Review</TabsTrigger>
+                  {steps.map((step, index) => (
+                    <TabsTrigger
+                      key={step}
+                      value={step}
+                      disabled={index !== currentStep}
+                    >
+                      {step.charAt(0).toUpperCase() + step.slice(1)}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
-                <TabsContent value="personality" className="mt-4">
-                  <h3 className="text-lg font-semibold">Define Personality</h3>
-                  <p className="text-muted-foreground">
-                    Choose your companion's core personality traits
-                  </p>
+                <TabsContent value="personality" className="mt-4 space-y-4">
+                  <CompanionForm
+                    currentStep={currentStep}
+                    onStepComplete={handleStepComplete}
+                  />
                 </TabsContent>
-                <TabsContent value="interests" className="mt-4">
-                  <h3 className="text-lg font-semibold">Set Interests</h3>
-                  <p className="text-muted-foreground">
-                    What topics interest your companion?
-                  </p>
-                </TabsContent>
-                <TabsContent value="background" className="mt-4">
-                  <h3 className="text-lg font-semibold">Create Background</h3>
-                  <p className="text-muted-foreground">
-                    Define your companion's history and experiences
-                  </p>
-                </TabsContent>
-                <TabsContent value="appearance" className="mt-4">
-                  <h3 className="text-lg font-semibold">Design Appearance</h3>
-                  <p className="text-muted-foreground">
-                    Customize how your companion looks
-                  </p>
-                </TabsContent>
-                <TabsContent value="review" className="mt-4">
-                  <h3 className="text-lg font-semibold">Final Review</h3>
-                  <p className="text-muted-foreground">
-                    Review and confirm your companion's details
-                  </p>
-                </TabsContent>
+                {/* Other steps will be implemented later */}
+                {steps.slice(1).map((step) => (
+                  <TabsContent key={step} value={step} className="mt-4">
+                    <h3 className="text-lg font-semibold">
+                      {step.charAt(0).toUpperCase() + step.slice(1)}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      This step will be implemented soon...
+                    </p>
+                  </TabsContent>
+                ))}
               </Tabs>
             </DialogContent>
           </Dialog>
