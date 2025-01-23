@@ -31,27 +31,19 @@ const CompanionForm = () => {
     { name: "Humor/Playfulness", key: "humor" },
   ];
 
-  const sharedInterests = [
-    "Fitness pal",
-    "Gaming Buddy",
-    "Music/Movie buff",
-    "Book club",
-    "Travel",
-    "Cooking squad",
-    "Wanderlust buddy",
-    "Tech geek"
+  const interestsList = [
+    { title: "Fitness pal", description: "Exercise and motivation partner" },
+    { title: "Gaming Buddy", description: "Video game companion" },
+    { title: "Music/Movie buff", description: "Film and music enthusiast" },
+    { title: "Book club", description: "Reading and discussion group" },
+    { title: "Travel", description: "Exploring new destinations" },
+    { title: "Cooking squad", description: "Culinary and recipes" },
+    { title: "Wanderlust buddy", description: "Adventure and Experiences" },
+    { title: "Tech geek", description: "Tech and gadgets fan" }
   ];
 
-  const companionInterests = [
-    "Fitness pal",
-    "Gaming Buddy",
-    "Music/Movie buff",
-    "Book club",
-    "Travel",
-    "Cooking squad",
-    "Wanderlust buddy",
-    "Tech geek"
-  ];
+  const sharedInterests = interestsList;
+  const companionInterests = interestsList;
 
   const handleTraitChange = (trait: string, value: number[]) => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
@@ -174,7 +166,7 @@ const CompanionForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {sharedInterests.map((interest, index) => (
                   <Card
-                    key={interest}
+                    key={interest.title}
                     className={cn(
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
@@ -183,7 +175,10 @@ const CompanionForm = () => {
                       animationDelay: `${index * 50}ms`
                     }}
                   >
-                    <div className="text-sm text-center">{interest}</div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-center font-medium">{interest.title}</div>
+                      <div className="text-xs text-center text-muted-foreground">{interest.description}</div>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -195,7 +190,7 @@ const CompanionForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {companionInterests.map((interest, index) => (
                   <Card
-                    key={interest}
+                    key={interest.title}
                     className={cn(
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
@@ -204,7 +199,10 @@ const CompanionForm = () => {
                       animationDelay: `${index * 50}ms`
                     }}
                   >
-                    <div className="text-sm text-center">{interest}</div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-center font-medium">{interest.title}</div>
+                      <div className="text-xs text-center text-muted-foreground">{interest.description}</div>
+                    </div>
                   </Card>
                 ))}
               </div>
