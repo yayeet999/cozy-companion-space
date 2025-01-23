@@ -1,10 +1,5 @@
-import { SidebarWrapper } from "@/components/app/sidebar";
-import Dashboard from "@/pages/Dashboard";
+import LandingPage from "./LandingPage";
 
 export default function Index() {
-  return (
-    <SidebarWrapper>
-      <Dashboard />
-    </SidebarWrapper>
-  );
+  return <LandingPage />;
 }

@@ -93,8 +93,6 @@ const Auth = () => {
       if (session) {
         await supabase.auth.signOut();
       }
-      // Wait for a small delay to ensure auth state is updated
-      await new Promise(resolve => setTimeout(resolve, 100));
       navigate("/");
     } catch (error: any) {
       toast({
@@ -213,6 +211,3 @@ const Auth = () => {
       </Card>
     </div>
   );
-};
-
-export default Auth;
