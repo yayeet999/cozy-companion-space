@@ -12,7 +12,11 @@ import { useToast } from "@/components/ui/use-toast";
 
 type RelationType = "friend" | "romantic" | null;
 
-const CompanionForm = () => {
+interface CompanionFormProps {
+  onSuccess?: () => void;
+}
+
+const CompanionForm = ({ onSuccess }: CompanionFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState("");
@@ -124,6 +128,8 @@ const CompanionForm = () => {
         title: "Success",
         description: "Companion created successfully!",
       });
+
+      onSuccess?.();
 
       // Reset form
       setName("");

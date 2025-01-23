@@ -1,9 +1,9 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { UserProvider } from "@/providers/UserProvider";
 import { ProtectedRoute } from "@/components/guards/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/guards/PublicOnlyRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -14,21 +14,12 @@ import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
+    <TooltipProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <UserProvider>
             <Toaster />
             <Sonner />
             <Routes>
@@ -61,10 +52,10 @@ const App = () => (
                 <Route path="settings" element={<Settings />} />
               </Route>
             </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+          </UserProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </ErrorBoundary>
 );
 

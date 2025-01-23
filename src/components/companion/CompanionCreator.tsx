@@ -10,41 +10,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import CompanionForm from "./CompanionForm";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/providers/AuthProvider";
+import { useUser } from "@/providers/UserProvider";
 
-interface CompanionCreatorProps {
-  onCompanionCreated?: () => void;
-}
-
-const CompanionCreator = ({ onCompanionCreated }: CompanionCreatorProps) => {
+const CompanionCreator = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { user } = useAuth();
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      const checkCompanionStatus = async () => {
-        const { data } = await supabase
-          .from('companion_creators')
-          .select('is_completed')
-          .eq('user_id', user.id)
-          .eq('is_completed', true)
-          .maybeSingle();
-        
-        setIsCompleted(!!data);
-      };
-
-      checkCompanionStatus();
-    }
-  }, [user]);
+  const { companion, refetchCompanion } = useUser();
 
   const handleCompanionCreated = () => {
     setIsDialogOpen(false);
-    onCompanionCreated?.();
+    refetchCompanion();
   };
 
-  if (isCompleted) {
+  if (companion) {
     return null;
   }
 

@@ -8,9 +8,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { useUser } from "@/providers/UserProvider";
 import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import { useCompanion } from "@/hooks/useCompanion";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const Home = () => {
@@ -18,19 +17,8 @@ const Home = () => {
   const [age, setAge] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
+  const { profile, companion, isLoading, refetchProfile } = useUser();
   const { toast } = useToast();
-  
-  const { 
-    data: profileData, 
-    isLoading: isProfileLoading,
-    refetch: refetchProfile 
-  } = useProfile();
-  
-  const { 
-    data: companionData, 
-    isLoading: isCompanionLoading,
-    refetch: refetchCompanion 
-  } = useCompanion();
 
   const isValidAge = Number(age) >= 18;
   const canSave = nickname.trim() && age && isValidAge && !isSaving;
@@ -69,7 +57,7 @@ const Home = () => {
     }
   };
 
-  if (isProfileLoading || isCompanionLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner />
@@ -85,10 +73,10 @@ const Home = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {profileData?.is_profile_completed ? (
+        {profile?.is_profile_completed ? (
           <ProfileCard 
-            username={profileData.username} 
-            age={profileData.age} 
+            username={profile.username || ""} 
+            age={profile.age || 0} 
           />
         ) : (
           <Card className="bg-white shadow-md">
@@ -138,16 +126,16 @@ const Home = () => {
           </Card>
         )}
 
-        {companionData ? (
+        {companion ? (
           <CompanionCard
-            name={companionData.name}
-            nickname={companionData.nickname}
-            relationType={companionData.relation_type}
-            traits={companionData.traits}
-            interests={companionData.interests}
+            name={companion.name}
+            nickname={companion.nickname}
+            relationType={companion.relation_type}
+            traits={companion.traits}
+            interests={companion.interests}
           />
         ) : (
-          <CompanionCreator onCompanionCreated={refetchCompanion} />
+          <CompanionCreator />
         )}
       </div>
     </div>
