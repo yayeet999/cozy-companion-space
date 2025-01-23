@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Home, MessageSquare, Settings, LogOut } from "lucide-react";
+import { Home, MessageSquare, Settings, LogOut, Lock } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
@@ -18,12 +18,24 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type SubscriptionTier = 'free' | 'paid';
 
 const menuItems = [
   { title: "Home", icon: Home, route: "/dashboard" },
-  { title: "Let's Talk", icon: MessageSquare, route: "/dashboard/chat" },
+  { 
+    title: "Let's Talk", 
+    icon: MessageSquare, 
+    route: "/dashboard/chat",
+    requiresPaid: true,
+    lockedMessage: "Upgrade to Premium to unlock chat features"
+  },
   { title: "Settings", icon: Settings, route: "/dashboard/settings" },
 ];
 
@@ -90,14 +102,36 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    onClick={() => navigate(item.route)}
-                    tooltip={item.title}
-                    data-active={location.pathname === item.route}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <SidebarMenuButton
+                            onClick={() => {
+                              if (!item.requiresPaid || subscriptionTier === 'paid') {
+                                navigate(item.route);
+                              }
+                            }}
+                            tooltip={item.title}
+                            data-active={location.pathname === item.route}
+                            className={item.requiresPaid && subscriptionTier !== 'paid' ? 'opacity-50 cursor-not-allowed' : ''}
+                          >
+                            {item.requiresPaid && subscriptionTier !== 'paid' ? (
+                              <Lock className="h-4 w-4 mr-2" />
+                            ) : (
+                              <item.icon className="h-4 w-4" />
+                            )}
+                            <span>{item.title}</span>
+                          </SidebarMenuButton>
+                        </div>
+                      </TooltipTrigger>
+                      {item.requiresPaid && subscriptionTier !== 'paid' && (
+                        <TooltipContent>
+                          <p>{item.lockedMessage}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
