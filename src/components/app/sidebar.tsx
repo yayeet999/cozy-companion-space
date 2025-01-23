@@ -33,7 +33,7 @@ const menuItems = [
     title: "Let's Talk", 
     icon: MessageSquare, 
     route: "/dashboard/chat",
-    requiresPaid: true,
+    requiresAccess: true,
     lockedMessage: "Complete your profile and create a companion to unlock chat features"
   },
   { title: "Settings", icon: Settings, route: "/dashboard/settings" },
@@ -136,15 +136,15 @@ export function AppSidebar() {
                         <div>
                           <SidebarMenuButton
                             onClick={() => {
-                              if (!item.requiresPaid || (subscriptionTier === 'paid' && canAccessChat)) {
+                              if (!item.requiresAccess || canAccessChat) {
                                 navigate(item.route);
                               }
                             }}
                             tooltip={item.title}
                             data-active={location.pathname === item.route}
-                            className={item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') ? 'opacity-50 cursor-not-allowed' : ''}
+                            className={item.requiresAccess && !canAccessChat ? 'opacity-50 cursor-not-allowed' : ''}
                           >
-                            {item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') ? (
+                            {item.requiresAccess && !canAccessChat ? (
                               <Lock className="h-4 w-4 mr-2" />
                             ) : (
                               <item.icon className="h-4 w-4" />
@@ -153,7 +153,7 @@ export function AppSidebar() {
                           </SidebarMenuButton>
                         </div>
                       </TooltipTrigger>
-                      {item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') && (
+                      {item.requiresAccess && !canAccessChat && (
                         <TooltipContent>
                           <p>{item.lockedMessage}</p>
                         </TooltipContent>
