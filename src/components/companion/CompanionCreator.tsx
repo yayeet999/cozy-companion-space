@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,9 +10,34 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import CompanionForm from "./CompanionForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
 
 const CompanionCreator = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const checkCompanionStatus = async () => {
+        const { data } = await supabase
+          .from('companion_creators')
+          .select('is_completed')
+          .eq('user_id', user.id)
+          .eq('is_completed', true)
+          .single();
+        
+        setIsCompleted(!!data);
+      };
+
+      checkCompanionStatus();
+    }
+  }, [user]);
+
+  if (isCompleted) {
+    return null; // The parent component will render the CompanionCard instead
+  }
 
   return (
     <Card className="h-full">
