@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -14,6 +15,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -84,12 +86,42 @@ const Auth = () => {
     }
   };
 
+  const handleBackToHome = async () => {
+    setNavigating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.auth.signOut();
+      }
+      // Wait for a small delay to ensure auth state is updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to navigate. Please try again.",
+      });
+    } finally {
+      setNavigating(false);
+    }
+  };
+
+  if (navigating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col items-center justify-center p-4">
       <Button
         variant="ghost"
         className="absolute top-4 left-4 flex items-center gap-2"
-        onClick={() => navigate("/")}
+        onClick={handleBackToHome}
+        disabled={navigating}
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Home
