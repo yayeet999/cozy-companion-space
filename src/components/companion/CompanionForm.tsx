@@ -64,6 +64,7 @@ const CompanionForm = () => {
 
   const hasTraitsSelected = Object.keys(traits).length >= 3;
   const hasThreeInterests = selectedInterests.size === 3;
+  const remainingSelections = 3 - selectedInterests.size;
 
   const handleSave = () => {
     // Handle save logic here
@@ -179,6 +180,12 @@ const CompanionForm = () => {
         {/* Right Column - Interests Section */}
         {showInterests && (
           <div className="space-y-6 animate-in slide-in-from-right duration-500">
+            {/* Selection Notice */}
+            <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg">
+              Select {remainingSelections} more interest{remainingSelections !== 1 ? 's' : ''} 
+              {remainingSelections > 0 ? ' (3 total required)' : ''}
+            </div>
+
             {/* Shared Interests */}
             <div className="space-y-3">
               <Label className="text-sm block">Shared Interests/Hobbies</Label>
@@ -212,6 +219,7 @@ const CompanionForm = () => {
                 {companionInterests.map((interest, index) => (
                   <Card
                     key={interest.title}
+                    onClick={() => !selectedInterests.has(interest.title) && handleInterestSelect(interest.title)}
                     className={cn(
                       "p-3 transition-all",
                       "animate-in fade-in-50 zoom-in-95",
