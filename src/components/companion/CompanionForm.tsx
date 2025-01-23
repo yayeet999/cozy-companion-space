@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,21 +9,11 @@ import { Heart, Users } from "lucide-react";
 
 type RelationType = "friend" | "romantic" | null;
 
-interface CompanionFormProps {
-  currentStep: number;
-  onStepComplete: (step: number) => void;
-}
-
-const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
+const CompanionForm = () => {
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [relationType, setRelationType] = useState<RelationType>(null);
   const [traits, setTraits] = useState<Record<string, number>>({});
-
-  // Reset traits when relationship type changes
-  useEffect(() => {
-    setTraits({});
-  }, [relationType]);
 
   const friendTraits = [
     { name: "Empathy/supportiveness", key: "empathy" },
@@ -46,120 +36,88 @@ const CompanionForm = ({ currentStep, onStepComplete }: CompanionFormProps) => {
 
   const handleRelationTypeSelect = (type: RelationType) => {
     setRelationType(type);
+    setTraits({}); // Reset traits when changing type
   };
 
-  const currentTraits = relationType === "friend" ? friendTraits : romanticTraits;
-  const requiredTraitCount = relationType === "friend" ? 4 : 5;
-  const hasAllTraits = 
-    Object.keys(traits).length === requiredTraitCount && 
-    Object.values(traits).every(value => value > 0);
-
-  const handleNextStep = () => {
-    if (currentStep === 0 && name && nickname && relationType) {
-      onStepComplete(0);
-    } else if (currentStep === 1 && hasAllTraits) {
-      onStepComplete(1);
-    }
-  };
-
-  if (currentStep === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="name">AI Companion Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter a name"
-            />
-          </div>
-          <div>
-            <Label htmlFor="nickname">Nickname</Label>
-            <Input
-              id="nickname"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="Enter a nickname"
-            />
-          </div>
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">AI Companion Name</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter a name"
+          />
         </div>
-        <div className="space-y-2">
-          <Label>Relationship Type</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <Card
-              className={cn(
-                "p-4 cursor-pointer hover:border-primary transition-colors",
-                relationType === "friend" && "border-primary bg-primary/5"
-              )}
-              onClick={() => handleRelationTypeSelect("friend")}
-            >
-              <div className="flex flex-col items-center space-y-2">
-                <Users className="h-8 w-8" />
-                <span>Friend</span>
-              </div>
-            </Card>
-            <Card
-              className={cn(
-                "p-4 cursor-pointer hover:border-primary transition-colors",
-                relationType === "romantic" && "border-primary bg-primary/5"
-              )}
-              onClick={() => handleRelationTypeSelect("romantic")}
-            >
-              <div className="flex flex-col items-center space-y-2">
-                <Heart className="h-8 w-8" />
-                <span>Romantic Partner</span>
-              </div>
-            </Card>
-          </div>
+        <div>
+          <Label htmlFor="nickname">Nickname</Label>
+          <Input
+            id="nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="Enter a nickname"
+          />
         </div>
-        <Button
-          className="w-full"
-          onClick={handleNextStep}
-          disabled={!name || !nickname || !relationType}
-        >
-          Continue
-        </Button>
       </div>
-    );
-  }
 
-  if (currentStep === 1 && relationType) {
-    return (
-      <div className="space-y-8">
-        <div className="text-sm text-muted-foreground">
-          Adjust the sliders below to define your {relationType === "friend" ? "friend" : "partner"}'s personality traits
-        </div>
-        {currentTraits.map((trait) => (
-          <div key={trait.key} className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label>{trait.name}</Label>
-              <span className="text-sm font-medium">
-                {traits[trait.key] || 0}/10
-              </span>
+      <div className="space-y-2">
+        <Label>Relationship Type</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <Card
+            className={cn(
+              "p-4 cursor-pointer hover:border-primary transition-colors",
+              relationType === "friend" && "border-primary bg-primary/5"
+            )}
+            onClick={() => handleRelationTypeSelect("friend")}
+          >
+            <div className="flex flex-col items-center space-y-2">
+              <Users className="h-8 w-8" />
+              <span>Friend</span>
             </div>
-            <Slider
-              value={[traits[trait.key] || 0]}
-              max={10}
-              step={1}
-              onValueChange={(value) => handleTraitChange(trait.key, value)}
-              className="cursor-pointer"
-            />
-          </div>
-        ))}
-        <Button
-          className="w-full"
-          onClick={handleNextStep}
-          disabled={!hasAllTraits}
-        >
-          Continue
-        </Button>
+          </Card>
+          <Card
+            className={cn(
+              "p-4 cursor-pointer hover:border-primary transition-colors",
+              relationType === "romantic" && "border-primary bg-primary/5"
+            )}
+            onClick={() => handleRelationTypeSelect("romantic")}
+          >
+            <div className="flex flex-col items-center space-y-2">
+              <Heart className="h-8 w-8" />
+              <span>Romantic Partner</span>
+            </div>
+          </Card>
+        </div>
       </div>
-    );
-  }
 
-  return null;
+      {relationType && (
+        <div className="space-y-8">
+          <div className="text-sm text-muted-foreground">
+            Adjust the sliders below to define your {relationType === "friend" ? "friend" : "partner"}'s personality traits
+          </div>
+          {(relationType === "friend" ? friendTraits : romanticTraits).map((trait) => (
+            <div key={trait.key} className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>{trait.name}</Label>
+                <span className="text-sm font-medium">
+                  {traits[trait.key] || 0}/10
+                </span>
+              </div>
+              <Slider
+                value={[traits[trait.key] || 0]}
+                max={10}
+                step={1}
+                onValueChange={(value) => handleTraitChange(trait.key, value)}
+                className="cursor-pointer"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default CompanionForm;
