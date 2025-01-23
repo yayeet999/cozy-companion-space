@@ -43,9 +43,6 @@ const CompanionForm = () => {
     { title: "Tech geek", description: "Tech and gadgets fan" }
   ];
 
-  const sharedInterests = interestsList;
-  const companionInterests = interestsList;
-
   const handleTraitChange = (trait: string, value: number[]) => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
   };
@@ -186,11 +183,11 @@ const CompanionForm = () => {
               {remainingSelections > 0 ? ' (3 total required)' : ''}
             </div>
 
-            {/* Shared Interests */}
+            {/* AI Companion Interests */}
             <div className="space-y-3">
-              <Label className="text-sm block">Shared Interests/Hobbies</Label>
+              <Label className="text-sm block">AI Companion Interests/Hobbies</Label>
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {sharedInterests.map((interest, index) => (
+                {interestsList.map((interest, index) => (
                   <Card
                     key={interest.title}
                     onClick={() => handleInterestSelect(interest.title)}
@@ -198,34 +195,6 @@ const CompanionForm = () => {
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
                       selectedInterests.has(interest.title) && "border-primary bg-primary/5"
-                    )}
-                    style={{
-                      animationDelay: `${index * 50}ms`
-                    }}
-                  >
-                    <div className="space-y-1">
-                      <div className="text-sm text-center font-medium">{interest.title}</div>
-                      <div className="text-xs text-center text-muted-foreground">{interest.description}</div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* Companion Interests */}
-            <div className="space-y-3">
-              <Label className="text-sm block">Companion Interests/Hobbies</Label>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {companionInterests.map((interest, index) => (
-                  <Card
-                    key={interest.title}
-                    onClick={() => !selectedInterests.has(interest.title) && handleInterestSelect(interest.title)}
-                    className={cn(
-                      "p-3 transition-all",
-                      "animate-in fade-in-50 zoom-in-95",
-                      selectedInterests.has(interest.title) 
-                        ? "opacity-40 cursor-not-allowed"
-                        : "cursor-pointer hover:border-primary hover:scale-105"
                     )}
                     style={{
                       animationDelay: `${index * 50}ms`
