@@ -5,27 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { 
-  Heart, 
-  Users, 
-  ArrowRight,
-  Book,
-  Gamepad,
-  Music,
-  Ball,
-  Utensils,
-  Plane,
-  Palette,
-  Film,
-  Camera,
-  Music2,
-  Pen,
-  Mountain,
-  Flower2,
-  Laptop,
-  Shirt,
-  Dumbbell
-} from "lucide-react";
+import { Heart, Users, ArrowRight } from "lucide-react";
 
 type RelationType = "friend" | "romantic" | null;
 
@@ -52,25 +32,13 @@ const CompanionForm = () => {
   ];
 
   const sharedInterests = [
-    { name: "Reading", icon: Book },
-    { name: "Gaming", icon: Gamepad },
-    { name: "Music", icon: Music },
-    { name: "Sports", icon: Ball },
-    { name: "Cooking", icon: Utensils },
-    { name: "Travel", icon: Plane },
-    { name: "Art", icon: Palette },
-    { name: "Movies", icon: Film }
+    "Reading", "Gaming", "Music", "Sports",
+    "Cooking", "Travel", "Art", "Movies"
   ];
 
   const companionInterests = [
-    { name: "Photography", icon: Camera },
-    { name: "Dancing", icon: Music2 },
-    { name: "Writing", icon: Pen },
-    { name: "Hiking", icon: Mountain },
-    { name: "Gardening", icon: Flower2 },
-    { name: "Technology", icon: Laptop },
-    { name: "Fashion", icon: Shirt },
-    { name: "Fitness", icon: Dumbbell }
+    "Photography", "Dancing", "Writing", "Hiking",
+    "Gardening", "Technology", "Fashion", "Fitness"
   ];
 
   const handleTraitChange = (trait: string, value: number[]) => {
@@ -194,7 +162,7 @@ const CompanionForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {sharedInterests.map((interest, index) => (
                   <Card
-                    key={interest.name}
+                    key={interest}
                     className={cn(
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
@@ -203,10 +171,7 @@ const CompanionForm = () => {
                       animationDelay: `${index * 50}ms`
                     }}
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <interest.icon className="h-5 w-5" />
-                      <div className="text-sm text-center">{interest.name}</div>
-                    </div>
+                    <div className="text-sm text-center">{interest}</div>
                   </Card>
                 ))}
               </div>
@@ -218,7 +183,7 @@ const CompanionForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {companionInterests.map((interest, index) => (
                   <Card
-                    key={interest.name}
+                    key={interest}
                     className={cn(
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
@@ -227,10 +192,7 @@ const CompanionForm = () => {
                       animationDelay: `${index * 50}ms`
                     }}
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <interest.icon className="h-5 w-5" />
-                      <div className="text-sm text-center">{interest.name}</div>
-                    </div>
+                    <div className="text-sm text-center">{interest}</div>
                   </Card>
                 ))}
               </div>
