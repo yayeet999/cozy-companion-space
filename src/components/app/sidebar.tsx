@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, Home, Settings, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Home, MessageSquare, Settings, LogOut } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import {
@@ -21,24 +21,21 @@ import { Badge } from "@/components/ui/badge";
 
 type SubscriptionTier = 'free' | 'paid';
 
-interface Subscription {
-  tier: SubscriptionTier;
-}
-
 const menuItems = [
   { title: "Home", icon: Home, route: "/dashboard" },
+  { title: "Let's Talk", icon: MessageSquare, route: "/dashboard/chat" },
   { title: "Settings", icon: Settings, route: "/settings" },
 ];
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('free');
 
   useEffect(() => {
     if (!user) return;
 
-    // Fetch subscription data
     const fetchSubscription = async () => {
       const { data: subscription } = await supabase
         .from('subscriptions')
@@ -53,7 +50,6 @@ export function AppSidebar() {
 
     fetchSubscription();
 
-    // Listen for subscription changes
     const channel = supabase
       .channel('subscription-changes')
       .on(
@@ -66,7 +62,7 @@ export function AppSidebar() {
         },
         (payload) => {
           if (payload.new) {
-            setSubscriptionTier((payload.new as Subscription).tier);
+            setSubscriptionTier((payload.new as any).tier);
           }
         }
       )
@@ -97,6 +93,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     onClick={() => navigate(item.route)}
                     tooltip={item.title}
+                    data-active={location.pathname === item.route}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>

@@ -10,6 +10,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import Chat from "./pages/Chat";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,7 +54,10 @@ const App = () => (
                     <Dashboard />
                   </ProtectedRoute>
                 }
-              />
+              >
+                <Route index element={<Home />} />
+                <Route path="chat" element={<Chat />} />
+              </Route>
             </Routes>
           </AuthProvider>
         </BrowserRouter>
