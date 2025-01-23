@@ -24,10 +24,16 @@ const menuItems = [
   { title: "Settings", icon: Settings, route: "/settings" },
 ];
 
+type SubscriptionTier = 'free' | 'paid';
+
+interface Subscription {
+  tier: SubscriptionTier;
+}
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'paid'>('free');
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('free');
 
   useEffect(() => {
     // Fetch user session and subscription data
@@ -63,7 +69,7 @@ export function AppSidebar() {
         },
         (payload) => {
           if (payload.new) {
-            setSubscriptionTier(payload.new.tier as 'free' | 'paid');
+            setSubscriptionTier((payload.new as Subscription).tier);
           }
         }
       )
