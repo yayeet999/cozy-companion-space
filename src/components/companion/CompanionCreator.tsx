@@ -13,7 +13,11 @@ import CompanionForm from "./CompanionForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 
-const CompanionCreator = () => {
+interface CompanionCreatorProps {
+  onCompanionCreated?: () => void;
+}
+
+const CompanionCreator = ({ onCompanionCreated }: CompanionCreatorProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user } = useAuth();
   const [isCompleted, setIsCompleted] = useState(false);
@@ -26,7 +30,7 @@ const CompanionCreator = () => {
           .select('is_completed')
           .eq('user_id', user.id)
           .eq('is_completed', true)
-          .single();
+          .maybeSingle();
         
         setIsCompleted(!!data);
       };
@@ -35,8 +39,13 @@ const CompanionCreator = () => {
     }
   }, [user]);
 
+  const handleCompanionCreated = () => {
+    setIsDialogOpen(false);
+    onCompanionCreated?.();
+  };
+
   if (isCompleted) {
-    return null; // The parent component will render the CompanionCard instead
+    return null;
   }
 
   return (
@@ -54,7 +63,7 @@ const CompanionCreator = () => {
               <DialogHeader>
                 <DialogTitle>Create Your Companion</DialogTitle>
               </DialogHeader>
-              <CompanionForm />
+              <CompanionForm onSuccess={handleCompanionCreated} />
             </DialogContent>
           </Dialog>
         </CardTitle>

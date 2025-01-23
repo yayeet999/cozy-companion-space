@@ -4,61 +4,36 @@ import { Label } from "@/components/ui/label";
 import CompanionCreator from "@/components/companion/CompanionCreator";
 import CompanionCard from "@/components/companion/CompanionCard";
 import ProfileCard from "@/components/profile/ProfileCard";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useCompanion } from "@/hooks/useCompanion";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const Home = () => {
   const [nickname, setNickname] = useState("");
   const [age, setAge] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [profileData, setProfileData] = useState<any>(null);
-  const [companionData, setCompanionData] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const { 
+    data: profileData, 
+    isLoading: isProfileLoading,
+    refetch: refetchProfile 
+  } = useProfile();
+  
+  const { 
+    data: companionData, 
+    isLoading: isCompanionLoading,
+    refetch: refetchCompanion 
+  } = useCompanion();
 
   const isValidAge = Number(age) >= 18;
   const canSave = nickname.trim() && age && isValidAge && !isSaving;
-
-  useEffect(() => {
-    if (user) {
-      // Fetch profile data
-      const fetchProfile = async () => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile) {
-          setProfileData(profile);
-          if (!profile.is_profile_completed) {
-            setNickname(profile.username || '');
-            setAge(profile.age?.toString() || '');
-          }
-        }
-      };
-
-      // Fetch companion data
-      const fetchCompanion = async () => {
-        const { data: companion } = await supabase
-          .from('companion_creators')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_completed', true)
-          .single();
-        
-        if (companion) {
-          setCompanionData(companion);
-        }
-      };
-
-      fetchProfile();
-      fetchCompanion();
-    }
-  }, [user]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -76,12 +51,7 @@ const Home = () => {
 
       if (error) throw error;
 
-      // Update local state
-      setProfileData({
-        username: nickname,
-        age: parseInt(age),
-        is_profile_completed: true
-      });
+      await refetchProfile();
 
       toast({
         title: "Profile Updated",
@@ -98,6 +68,14 @@ const Home = () => {
       setIsSaving(false);
     }
   };
+
+  if (isProfileLoading || isCompanionLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -169,7 +147,7 @@ const Home = () => {
             interests={companionData.interests}
           />
         ) : (
-          <CompanionCreator />
+          <CompanionCreator onCompanionCreated={refetchCompanion} />
         )}
       </div>
     </div>
