@@ -25,7 +25,7 @@ const CompanionCreator = () => {
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[90vw] transition-all duration-500">
               <DialogHeader>
                 <DialogTitle>Create Your Companion</DialogTitle>
               </DialogHeader>
