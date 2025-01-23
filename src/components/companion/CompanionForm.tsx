@@ -32,13 +32,25 @@ const CompanionForm = () => {
   ];
 
   const sharedInterests = [
-    "Reading", "Gaming", "Music", "Sports",
-    "Cooking", "Travel", "Art", "Movies"
+    "Fitness pal",
+    "Gaming Buddy",
+    "Music/Movie buff",
+    "Book club",
+    "Travel",
+    "Cooking squad",
+    "Wanderlust buddy",
+    "Tech geek"
   ];
 
   const companionInterests = [
-    "Photography", "Dancing", "Writing", "Hiking",
-    "Gardening", "Technology", "Fashion", "Fitness"
+    "Fitness pal",
+    "Gaming Buddy",
+    "Music/Movie buff",
+    "Book club",
+    "Travel",
+    "Cooking squad",
+    "Wanderlust buddy",
+    "Tech geek"
   ];
 
   const handleTraitChange = (trait: string, value: number[]) => {
