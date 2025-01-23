@@ -98,7 +98,7 @@ const CompanionForm = () => {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      const { error: companionError } = await supabase
         .from('companion_creators')
         .insert({
           user_id: user.id,
@@ -110,7 +110,15 @@ const CompanionForm = () => {
           is_completed: true,
         });
 
-      if (error) throw error;
+      if (companionError) throw companionError;
+
+      // Update the profile to mark companion as created
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ is_companion_created: true })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
 
       toast({
         title: "Success",

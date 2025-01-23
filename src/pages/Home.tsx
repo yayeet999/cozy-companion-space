@@ -27,7 +27,8 @@ const Home = () => {
         .from('profiles')
         .update({
           username: nickname,
-          age: parseInt(age)
+          age: parseInt(age),
+          is_profile_completed: true
         })
         .eq('id', user.id);
 

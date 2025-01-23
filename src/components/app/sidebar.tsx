@@ -34,7 +34,7 @@ const menuItems = [
     icon: MessageSquare, 
     route: "/dashboard/chat",
     requiresPaid: true,
-    lockedMessage: "Upgrade to Premium to unlock chat features"
+    lockedMessage: "Complete your profile and create a companion to unlock chat features"
   },
   { title: "Settings", icon: Settings, route: "/dashboard/settings" },
 ];
@@ -44,6 +44,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('free');
+  const [canAccessChat, setCanAccessChat] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -60,9 +61,19 @@ export function AppSidebar() {
       }
     };
 
-    fetchSubscription();
+    const checkChatAccess = async () => {
+      const { data, error } = await supabase
+        .rpc('can_access_chat', { user_id: user.id });
+      
+      if (!error && data) {
+        setCanAccessChat(data);
+      }
+    };
 
-    const channel = supabase
+    fetchSubscription();
+    checkChatAccess();
+
+    const subscriptionChannel = supabase
       .channel('subscription-changes')
       .on(
         'postgres_changes',
@@ -80,8 +91,25 @@ export function AppSidebar() {
       )
       .subscribe();
 
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        () => {
+          checkChatAccess();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(subscriptionChannel);
+      supabase.removeChannel(profileChannel);
     };
   }, [user]);
 
@@ -108,15 +136,15 @@ export function AppSidebar() {
                         <div>
                           <SidebarMenuButton
                             onClick={() => {
-                              if (!item.requiresPaid || subscriptionTier === 'paid') {
+                              if (!item.requiresPaid || (subscriptionTier === 'paid' && canAccessChat)) {
                                 navigate(item.route);
                               }
                             }}
                             tooltip={item.title}
                             data-active={location.pathname === item.route}
-                            className={item.requiresPaid && subscriptionTier !== 'paid' ? 'opacity-50 cursor-not-allowed' : ''}
+                            className={item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') ? 'opacity-50 cursor-not-allowed' : ''}
                           >
-                            {item.requiresPaid && subscriptionTier !== 'paid' ? (
+                            {item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') ? (
                               <Lock className="h-4 w-4 mr-2" />
                             ) : (
                               <item.icon className="h-4 w-4" />
@@ -125,7 +153,7 @@ export function AppSidebar() {
                           </SidebarMenuButton>
                         </div>
                       </TooltipTrigger>
-                      {item.requiresPaid && subscriptionTier !== 'paid' && (
+                      {item.requiresPaid && (!canAccessChat || subscriptionTier !== 'paid') && (
                         <TooltipContent>
                           <p>{item.lockedMessage}</p>
                         </TooltipContent>

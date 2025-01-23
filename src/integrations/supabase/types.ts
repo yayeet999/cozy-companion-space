@@ -54,6 +54,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          is_companion_created: boolean
+          is_profile_completed: boolean
           username: string | null
         }
         Insert: {
@@ -61,6 +63,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id: string
+          is_companion_created?: boolean
+          is_profile_completed?: boolean
           username?: string | null
         }
         Update: {
@@ -68,6 +72,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_companion_created?: boolean
+          is_profile_completed?: boolean
           username?: string | null
         }
         Relationships: []
@@ -101,7 +107,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_chat: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       subscription_tier: "free" | "paid"
