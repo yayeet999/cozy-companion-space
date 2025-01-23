@@ -15,6 +15,7 @@ const CompanionForm = () => {
   const [relationType, setRelationType] = useState<RelationType>(null);
   const [traits, setTraits] = useState<Record<string, number>>({});
   const [showInterests, setShowInterests] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
 
   const friendTraits = [
     { name: "Empathy/supportiveness", key: "empathy" },
@@ -49,7 +50,25 @@ const CompanionForm = () => {
     setTraits((prev) => ({ ...prev, [trait]: value[0] }));
   };
 
+  const handleInterestSelect = (interest: string) => {
+    setSelectedInterests(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(interest)) {
+        newSet.delete(interest);
+      } else if (newSet.size < 3) {
+        newSet.add(interest);
+      }
+      return newSet;
+    });
+  };
+
   const hasTraitsSelected = Object.keys(traits).length >= 3;
+  const hasThreeInterests = selectedInterests.size === 3;
+
+  const handleSave = () => {
+    // Handle save logic here
+    console.log("Selected interests:", Array.from(selectedInterests));
+  };
 
   return (
     <div className={cn(
@@ -167,9 +186,11 @@ const CompanionForm = () => {
                 {sharedInterests.map((interest, index) => (
                   <Card
                     key={interest.title}
+                    onClick={() => handleInterestSelect(interest.title)}
                     className={cn(
                       "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
                       "animate-in fade-in-50 zoom-in-95",
+                      selectedInterests.has(interest.title) && "border-primary bg-primary/5"
                     )}
                     style={{
                       animationDelay: `${index * 50}ms`
@@ -192,8 +213,11 @@ const CompanionForm = () => {
                   <Card
                     key={interest.title}
                     className={cn(
-                      "p-3 cursor-pointer hover:border-primary transition-all hover:scale-105",
+                      "p-3 transition-all",
                       "animate-in fade-in-50 zoom-in-95",
+                      selectedInterests.has(interest.title) 
+                        ? "opacity-40 cursor-not-allowed"
+                        : "cursor-pointer hover:border-primary hover:scale-105"
                     )}
                     style={{
                       animationDelay: `${index * 50}ms`
@@ -207,6 +231,15 @@ const CompanionForm = () => {
                 ))}
               </div>
             </div>
+
+            {/* Save Button */}
+            {hasThreeInterests && (
+              <div className="flex justify-end mt-6">
+                <Button onClick={handleSave}>
+                  Save Interests
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
